@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useConnectionStore } from './stores/connection'
+import { useStreamersStore } from './stores/streamers'
 
-const connection = useConnectionStore()
+const streamers = useStreamersStore()
 </script>
 
 <template>
