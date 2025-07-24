@@ -60,25 +60,25 @@
   --color-primary-transparent-800: color-mix(in oklch, var(--color-primary) 80%, transparent);
   --color-primary-transparent-900: color-mix(in oklch, var(--color-primary) 90%, transparent);
 
-  --destructive-100: color-mix(in oklch, var(--color-destructive) 10%, white);
-  --destructive-200: color-mix(in oklch, var(--color-destructive) 20%, white);
-  --destructive-300: color-mix(in wklch, var(--color-destructive) 30%, white);
-  --destructive-400: color-mix(in wklch, var(--color-destructive) 40%, white);
-  --destructive-500: color-mix(in oklch, var(--color-destructive) 50%, white);
-  --destructive-600: color-mix(in oklch, var(--color-destructive) 60%, white);
-  --destructive-700: color-mix(in oklch, var(--color-destructive) 70%, white);
-  --destructive-800: color-mix(in oklch, var(--color-destructive) 80%, white);
-  --destructive-900: color-mix(in oklch, var(--color-destructive) 90%, white);
+  --color-destructive-100: color-mix(in oklch, var(--color-destructive) 10%, white);
+  --color-destructive-200: color-mix(in oklch, var(--color-destructive) 20%, white);
+  --color-destructive-300: color-mix(in wklch, var(--color-destructive) 30%, white);
+  --color-destructive-400: color-mix(in wklch, var(--color-destructive) 40%, white);
+  --color-destructive-500: color-mix(in oklch, var(--color-destructive) 50%, white);
+  --color-destructive-600: color-mix(in oklch, var(--color-destructive) 60%, white);
+  --color-destructive-700: color-mix(in oklch, var(--color-destructive) 70%, white);
+  --color-destructive-800: color-mix(in oklch, var(--color-destructive) 80%, white);
+  --color-destructive-900: color-mix(in oklch, var(--color-destructive) 90%, white);
 
-  --destructive-transparent-100: color-mix(in oklch, var(--color-destructive) 10%, transparent);
-  --destructive-transparent-200: color-mix(in oklch, var(--color-destructive) 20%, transparent);
-  --destructive-transparent-300: color-mix(in wklch, var(--color-destructive) 30%, transparent);
-  --destructive-transparent-400: color-mix(in wklch, var(--color-destructive) 40%, transparent);
-  --destructive-transparent-500: color-mix(in oklch, var(--color-destructive) 50%, transparent);
-  --destructive-transparent-600: color-mix(in oklch, var(--color-destructive) 60%, transparent);
-  --destructive-transparent-700: color-mix(in oklch, var(--color-destructive) 70%, transparent);
-  --destructive-transparent-800: color-mix(in oklch, var(--color-destructive) 80%, transparent);
-  --destructive-transparent-900: color-mix(in oklch, var(--color-destructive) 90%, transparent);
+  --color-destructive-transparent-100: color-mix(in oklch, var(--color-destructive) 10%, transparent);
+  --color-destructive-transparent-200: color-mix(in oklch, var(--color-destructive) 20%, transparent);
+  --color-destructive-transparent-300: color-mix(in wklch, var(--color-destructive) 30%, transparent);
+  --color-destructive-transparent-400: color-mix(in wklch, var(--color-destructive) 40%, transparent);
+  --color-destructive-transparent-500: color-mix(in oklch, var(--color-destructive) 50%, transparent);
+  --color-destructive-transparent-600: color-mix(in oklch, var(--color-destructive) 60%, transparent);
+  --color-destructive-transparent-700: color-mix(in oklch, var(--color-destructive) 70%, transparent);
+  --color-destructive-transparent-800: color-mix(in oklch, var(--color-destructive) 80%, transparent);
+  --color-destructive-transparent-900: color-mix(in oklch, var(--color-destructive) 90%, transparent);
 }
 
 :root {

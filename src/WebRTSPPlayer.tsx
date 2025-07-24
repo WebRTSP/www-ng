@@ -133,7 +133,7 @@ function WebRTSPPlayer() {
       failed && <CircleX
         className = {`
           ${stateIconClassNameCommon}
-          stroke-destructive-800
+          stroke-destructive-500
         `}
       />
     }

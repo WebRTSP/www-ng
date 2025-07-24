@@ -40,21 +40,35 @@ export function useWebRTSP(url: string): WebRTSP {
   useEffect(() => {
     clientRef.current = new WebRTSPClient(url);
 
-    const client = clientRef.current;
-    client.onConnected = () => { setConnected(true); };
-    client.onDisconnected = () => {
-      setConnected(false);
+    let active = true;
+
+    const resetState = () => {
       setRootOptions(new Options());
       setRootList(new URI2Description());
       urisInfosRef.current.clear();
       incUrisInfosRev();
     };
+
+    const client = clientRef.current;
+    client.onConnected = () => {
+      if(active) {
+        setConnected(true);
+      }
+    };
+    client.onDisconnected = () => {
+      if(active) {
+        setConnected(false);
+        resetState();
+      }
+    };
     client.connect();
 
     return () => {
+      active = false;
       client.disconnect().catch();
       clientRef.current = undefined;
       setConnected(false);
+      resetState();
     };
   }, [url]);
 
