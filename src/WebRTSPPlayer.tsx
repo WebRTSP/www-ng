@@ -17,13 +17,15 @@ const ConnectionState = {
   Disconnected: "disconnected",
   Failed: "failed",
   Closed: "closed",
-};
+} as const;
+type ConnectionState = typeof ConnectionState[keyof typeof ConnectionState];
 
 function WebRTSPPlayer() {
   const context = useContext(AppContext);
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<Player>(undefined);
-  const [connectionState, setConnectionState] = useState<string | undefined>();
+  type OptionalConnectionState = ConnectionState | undefined;
+  const [connectionState, setConnectionState] = useState<OptionalConnectionState>();
   const activeStreamer = context.activeStreamer;
   const activeStreamerRev = context.activeStreamerRev;
 
@@ -84,20 +86,22 @@ function WebRTSPPlayer() {
   const idle = activeStreamer == undefined;
 
   const loading = connectionState &&
-    [
+    ([
       ConnectionState.New,
       ConnectionState.Connecting,
       ConnectionState.Disconnected
-    ].includes(connectionState);
+    ] as string[]).includes(connectionState);
 
-  const playing = connectionState && [
+  const playing = connectionState &&
+    ([
       ConnectionState.Connected,
       ConnectionState.Disconnected,
       ConnectionState.Closed,
-    ].includes(connectionState);
-  const canRestart = connectionState && [
+    ] as string[]).includes(connectionState);
+  const canRestart = connectionState &&
+    ([
       ConnectionState.Closed,
-    ].includes(connectionState);
+    ] as string[]).includes(connectionState);
   const failed = connectionState == ConnectionState.Failed;
 
   const stateIconClassNameCommon = `
