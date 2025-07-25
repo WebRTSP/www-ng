@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { WebRTSP } from './useWebRTSP';
+import { WebRTSP } from 'webrtsp.react/useWebRTSP';
 
 export interface AppContextData {
   webRTSP: WebRTSP
