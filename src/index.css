@@ -1,8 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@import "webrtsp.react/WebRTSPPlayer.css"
-@source "../node_modules/webrtsp.react/WebRTSPPlayer.tsx"
+@import "./WebRTSP.react/WebRTSPPlayer.css"
+@source "./WebRTSP.react/WebRTSPPlayer.tsx"
 
 @custom-variant dark (&:is(.dark *));
 
