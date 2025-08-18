@@ -41,6 +41,7 @@ function App() {
           <WebRTSPPlayer
             webRTSP ={ webRTSP }
             activeStreamer = { activeStreamerRef.current }
+            activeStreamerRev = { activeStreamerRev }
             incActiveStreamerRev = { incActiveStreamerRev } />
         </main>
       </SidebarProvider>
