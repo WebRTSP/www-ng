@@ -204,6 +204,10 @@ function App() {
         </div>
         <div className = { cn(
           "flex-1 grid gap-1 m-2",
+          // mention all possible classes in commment
+          // to give Tailwind hint to embed all possible values:
+          // grid-cols-1 grid-cols-2 grid-cols-3
+          // grid-rows-1 grid-rows-2 grid-rows-3
           `grid-cols-${gridSize.width} grid-rows-${gridSize.height}`
         ) }>
           {
