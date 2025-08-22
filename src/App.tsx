@@ -23,6 +23,12 @@ import {
 } from "@/components/ui/popover";
 import { Method } from "webrtsp.ts/Types";
 import { type StreamerInfo } from "./StreamerInfo";
+import {
+  LoadActiveStreamers,
+  LoadMultiViewState,
+  SaveActiveStreamers,
+  SaveMultiViewState
+} from "./LocalStorage";
 
 
 declare const WebRTSPPort: number;
@@ -105,8 +111,30 @@ interface GridSize {
 
 function App() {
   const webRTSP = useWebRTSP(url);
-  const [gridSize, setGridSize] = useState<GridSize>(() => ({ width: 1, height: 1 }));
-  const activeStreamersRef = useLazyRef<(string | undefined) []>(() => Array(MAX_PREVIEW_COUNT));
+  const [gridSize, setGridSize] = useState<GridSize>(
+    () => {
+      return LoadMultiViewState() ?
+        { width: MAX_GRID_WIDTH, height: MAX_GRID_HEIGHT } :
+        { width: 1, height: 1 };
+    }
+  );
+
+  function saveGridSize(size: GridSize) {
+    setGridSize(size);
+    SaveMultiViewState(size.width != 1 && size.height != 1);
+  }
+
+  const activeStreamersRef = useLazyRef<(string | undefined) []>(
+    () => {
+      const activeStreamers = LoadActiveStreamers();
+
+      if(activeStreamers.length != MAX_PREVIEW_COUNT)
+        activeStreamers.length = MAX_PREVIEW_COUNT;
+
+      return activeStreamers;
+    }
+  );
+
   const [activeStreamersRevs, setActiveStreamersRevs] =
     useState<number[]>(() => Array(MAX_PREVIEW_COUNT).fill(0));
 
@@ -141,7 +169,7 @@ function App() {
               size = "icon"
               className = {"size-7"}
               onClick = {() => {
-                setGridSize({ width: MAX_GRID_WIDTH, height: MAX_GRID_HEIGHT });
+                saveGridSize({ width: MAX_GRID_WIDTH, height: MAX_GRID_HEIGHT });
               }}
             >
               <LayoutGridIcon/>
@@ -168,7 +196,7 @@ function App() {
             size = "icon"
             className = {"size-7"}
             onClick = {() => {
-              setGridSize({ width: 1, height: 1 });
+              saveGridSize({ width: 1, height: 1 });
             }}
           >
             <LayoutGridIcon/>
@@ -224,6 +252,7 @@ function App() {
         },
         setActiveStreamer(index: number, streamer: string) {
           activeStreamersRef.current[index] = streamer;
+          SaveActiveStreamers(activeStreamersRef.current);
           this.incActiveStreamerRev(index);
         },
 
