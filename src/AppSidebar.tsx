@@ -1,5 +1,12 @@
 import { useContext, useState  } from "react";
-import { Video, Film, LoaderCircle, ChevronRight, ChevronDown } from "lucide-react";
+import {
+  VideoIcon,
+  FilmIcon,
+  LoaderCircleIcon,
+  ChevronRightIcon,
+  ChevronDownIcon
+} from "lucide-react";
+
 import {
   Sidebar,
   SidebarContent,
@@ -12,18 +19,22 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger
+} from "@/components/ui/collapsible";
 
 import { AppContext } from "./AppContext";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./components/ui/collapsible";
 import { Method } from "webrtsp.ts/Types";
 
 export function StreamerSubItem(props: { subItem: [string, string] }) {
   const context = useContext(AppContext);
-  const subItem =  props.subItem;
+  const subItem = props.subItem;
   let name = subItem[0];
 
   const timeFormat =
-      Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "medium"});
+    Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "medium" });
 
   try {
     name = timeFormat.format(new Date(subItem[1]));
@@ -35,7 +46,7 @@ export function StreamerSubItem(props: { subItem: [string, string] }) {
         isActive = { context.activeStreamer === subItem[0] }
         onClick = { () => { context.activeStreamer = subItem[0]; } }
       >
-        <Film />
+        <FilmIcon />
         <span>{ name }</span>
       </SidebarMenuButton>
     </SidebarMenuSubItem>
@@ -69,9 +80,9 @@ export function StreamerItem(props: { item: [string, string] }) {
               <SidebarMenuButton
                 isActive = { context.activeStreamer === item[0] }
               >
-                <Video />
+                <VideoIcon />
                 <span>{ item[0] }</span>
-                <LoaderCircle className="ml-auto animate-spin"/>
+                <LoaderCircleIcon className = "ml-auto animate-spin"/>
               </SidebarMenuButton>
             </CollapsibleTrigger>
           </SidebarMenuItem>
@@ -86,12 +97,12 @@ export function StreamerItem(props: { item: [string, string] }) {
               <SidebarMenuButton
                 isActive = { context.activeStreamer === item[0] }
               >
-                <Video />
+                <VideoIcon />
                 <span>{ item[0] }</span>
                 {
                   isOpen ?
-                  <ChevronDown className="ml-auto" /> :
-                  <ChevronRight className="ml-auto" />
+                  <ChevronDownIcon className = "ml-auto" /> :
+                  <ChevronRightIcon className = "ml-auto" />
                 }
               </SidebarMenuButton>
             </CollapsibleTrigger>
@@ -116,10 +127,10 @@ export function StreamerItem(props: { item: [string, string] }) {
           <SidebarMenuButton
             isActive = { context.activeStreamer === item[0] }
           >
-            <Video /> <span>{ item[0] }</span>
+            <VideoIcon /> <span>{ item[0] }</span>
           </SidebarMenuButton>
           <SidebarMenuAction>
-            <LoaderCircle className="animate-spin"/>
+            <LoaderCircleIcon className = "animate-spin"/>
           </SidebarMenuAction>
         </SidebarMenuItem>
       );
@@ -130,7 +141,7 @@ export function StreamerItem(props: { item: [string, string] }) {
             isActive = { context.activeStreamer === item[0] }
             onClick = { () => { context.activeStreamer = item[0]; } }
           >
-            <Video />
+            <VideoIcon />
             <span>{ item[0] }</span>
           </SidebarMenuButton>
         </SidebarMenuItem>

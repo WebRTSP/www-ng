@@ -3,7 +3,7 @@ import { useWebRTSP } from "./WebRTSP.react/useWebRTSP";
 import { AppContext } from "./AppContext";
 import WebRTSPPlayer from "./WebRTSP.react/WebRTSPPlayer";
 import { AppSidebar } from "./AppSidebar";
-import { SidebarProvider, SidebarTrigger } from "./components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 
 declare const WebRTSPPort: number;
@@ -39,7 +39,7 @@ function App() {
         <main className = "relative flex-1">
           <SidebarTrigger />
           <WebRTSPPlayer
-            webRTSP ={ webRTSP }
+            webRTSP = { webRTSP }
             activeStreamer = { activeStreamerRef.current }
             activeStreamerRev = { activeStreamerRev }
             incActiveStreamerRev = { incActiveStreamerRev } />
