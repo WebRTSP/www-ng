@@ -1,7 +1,8 @@
-import { useContext, useRef, useState } from "react";
+import { useContext, useState } from "react";
 import { useWebRTSP } from "./WebRTSP.react/useWebRTSP";
 import { AppContext } from "./AppContext";
 import WebRTSPPlayer from "./WebRTSP.react/WebRTSPPlayer";
+import { useLazyRef } from "./WebRTSP.react/useLazyRef";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
@@ -104,10 +105,10 @@ interface GridSize {
 
 function App() {
   const webRTSP = useWebRTSP(url);
-  const [gridSize, setGridSize] = useState<GridSize>({ width: 1, height: 1 });
-  const activeStreamersRef = useRef<(string | undefined) []>(Array(MAX_PREVIEW_COUNT));
+  const [gridSize, setGridSize] = useState<GridSize>(() => ({ width: 1, height: 1 }));
+  const activeStreamersRef = useLazyRef<(string | undefined) []>(() => Array(MAX_PREVIEW_COUNT));
   const [activeStreamersRevs, setActiveStreamersRevs] =
-    useState<number[]>(Array(MAX_PREVIEW_COUNT).fill(0));
+    useState<number[]>(() => Array(MAX_PREVIEW_COUNT).fill(0));
 
   const incActiveStreamerRev = (index: number) => {
     setActiveStreamersRevs((revs) => {
