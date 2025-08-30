@@ -148,10 +148,7 @@ function App() {
   };
 
   const singlePreview = () => {
-    let activeStreamer = activeStreamersRef.current[0];
-    if(activeStreamer && !webRTSP.urisInfos.has(activeStreamer)) {
-      activeStreamer = undefined;
-    }
+    const activeStreamer = activeStreamersRef.current[0];
 
     return (
       <SidebarProvider>
@@ -214,10 +211,7 @@ function App() {
             Array(gridSize.height).fill(0).map((_, y) => {
               return Array(gridSize.width).fill(0).map((_, x) => {
                 const streamerIndex = y * gridSize.width + x;
-                let activeStreamer = activeStreamersRef.current[streamerIndex];
-                if(activeStreamer && !webRTSP.urisInfos.has(activeStreamer)) {
-                  activeStreamer = undefined;
-                }
+                const activeStreamer = activeStreamersRef.current[streamerIndex];
 
                 return <div
                     key = { streamerIndex }
