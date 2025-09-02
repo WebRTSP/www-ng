@@ -51,7 +51,8 @@ export function StreamerSelector(
   const rootList = [...context.webRTSP.rootList]
     .filter((item) => {
       const uriInfo = context.webRTSP.urisInfos.get(item[0]);
-      return !uriInfo?.options?.has(Method.LIST) || false;
+      const options = uriInfo?.options;
+      return (options && !options.has(Method.LIST) && options.has(Method.DESCRIBE));
     })
     .map((item): StreamerInfo => {
       return { uri: item[0], description: item[1] };

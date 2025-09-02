@@ -157,6 +157,11 @@ export function StreamerItem(props: { item: StreamerInfo }) {
 export function AppSidebar() {
   const context = useContext(AppContext);
   const rootList = [...context.webRTSP.rootList]
+    .filter((item) => {
+      const uriInfo = context.webRTSP.urisInfos.get(item[0]);
+      const options = uriInfo?.options;
+      return (options && (options.has(Method.LIST) || options.has(Method.DESCRIBE)));
+    })
     .map((item): StreamerInfo => {
       return { uri: item[0], description: item[1] };
     });
