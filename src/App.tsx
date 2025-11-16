@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { useWebRTSP } from "./WebRTSP.react/useWebRTSP";
 import { AppContext } from "./AppContext";
 import WebRTSPPlayer from "./WebRTSP.react/WebRTSPPlayer";
@@ -6,7 +6,7 @@ import { useLazyRef } from "./WebRTSP.react/useLazyRef";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { ChevronDownIcon, LayoutGridIcon, LoaderCircle } from "lucide-react";
+import { ChevronDownIcon, LayoutGridIcon, LoaderCircle, LoaderCircleIcon, VideoOffIcon } from "lucide-react";
 import { cn } from "./lib/utils";
 import { type ClassValue } from "clsx";
 import {
@@ -148,31 +148,95 @@ function App() {
     });
   };
 
+  const setActiveStreamer = useCallback((index: number, streamer: string) => {
+    activeStreamersRef.current[index] = streamer;
+    SaveActiveStreamers(activeStreamersRef.current);
+    incActiveStreamerRev(index);
+  }, [activeStreamersRef]);
+
+  const singleStreamerMode = webRTSP.rootList.size == 1;
+
+  useEffect(() => {
+    if(!webRTSP.connected)
+      return;
+
+    if(!singleStreamerMode)
+      return;
+
+    const firstStreamer = webRTSP.rootList.keys().next().value;
+
+    console.log("first streamer: ", firstStreamer);
+    if(firstStreamer)
+      setActiveStreamer(0, firstStreamer);
+  }, [setActiveStreamer, singleStreamerMode, webRTSP.connected, webRTSP.rootList]);
+
+  const loadingStub = () => {
+    return (
+      <main className = "min-h-svh w-full flex flex-col">
+        <div className = "relative flex-1">
+          <LoaderCircleIcon
+            className = {`
+              absolute
+              max-w-1/2 max-h-1/2
+              w-40 h-40
+              top-0 bottom-0 left-0 right-0
+              m-auto
+              stroke-primary-200
+              animate-spin
+            `}
+          />
+        </div>
+      </main>
+    );
+  };
+
+  const noStreamersStub = () => {
+    return (
+      <main className = "min-h-svh w-full flex flex-col">
+        <div className = "relative flex-1">
+          <VideoOffIcon
+            className = {`
+              absolute
+              max-w-1/2 max-h-1/2
+              w-40 h-40
+              top-0 bottom-0 left-0 right-0
+              m-auto
+              stroke-primary-200
+            `}
+          />
+        </div>
+      </main>
+    );
+  };
+
   const singlePreview = () => {
     const activeStreamer = activeStreamersRef.current[0];
 
     return (
       <SidebarProvider>
-        <AppSidebar />
+        { !singleStreamerMode && <AppSidebar /> }
         <main className = "flex-1 flex flex-col">
-          <div className = "flex mx-2 mt-1">
-            <SidebarTrigger />
-            <div className = "flex-1"></div>
-            <Button
-              variant = {
-                gridSize.width == 1 && gridSize.height == 1 ?
-                  "ghost" :
-                  "outline"
-              }
-              size = "icon"
-              className = {"size-7"}
-              onClick = {() => {
-                saveGridSize({ width: MAX_GRID_WIDTH, height: MAX_GRID_HEIGHT });
-              }}
-            >
-              <LayoutGridIcon/>
-            </Button>
-          </div>
+          {
+            !singleStreamerMode &&
+            <div className = "flex mx-2 mt-1">
+              <SidebarTrigger />
+              <div className = "flex-1"></div>
+              <Button
+                variant = {
+                  gridSize.width == 1 && gridSize.height == 1 ?
+                    "ghost" :
+                    "outline"
+                }
+                size = "icon"
+                className = {"size-7"}
+                onClick = {() => {
+                  saveGridSize({ width: MAX_GRID_WIDTH, height: MAX_GRID_HEIGHT });
+                }}
+              >
+                <LayoutGridIcon/>
+              </Button>
+            </div>
+          }
           <WebRTSPPlayer
             className = "flex-1"
             webRTSP ={ webRTSP }
@@ -241,6 +305,20 @@ function App() {
     );
   };
 
+  let main;
+  if(!webRTSP.connected || webRTSP.fetching) {
+    main = loadingStub();
+  } else if(webRTSP.rootList.size == 0) {
+    main = noStreamersStub();
+  } else if(
+    webRTSP.rootList.size == 1 ||
+    (gridSize.width == 1 && gridSize.height == 1)
+  ) {
+    main = singlePreview();
+  } else {
+    main = multiPreview();
+  }
+
   return (
     <AppContext value = {
       {
@@ -249,12 +327,7 @@ function App() {
         activeStreamer(index: number): string | undefined {
           return activeStreamersRef.current[index];
         },
-        setActiveStreamer(index: number, streamer: string) {
-          activeStreamersRef.current[index] = streamer;
-          SaveActiveStreamers(activeStreamersRef.current);
-          this.incActiveStreamerRev(index);
-        },
-
+        setActiveStreamer,
         activeStreamerRev(index: number): number {
           return activeStreamersRevs[index];
         },
@@ -263,11 +336,7 @@ function App() {
         },
       }
     } >
-      {
-        gridSize.width == 1 && gridSize.height == 1 ?
-          singlePreview() :
-          multiPreview()
-      }
+      { main }
     </AppContext>
   );
 }
