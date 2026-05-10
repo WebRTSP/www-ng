@@ -17,8 +17,6 @@ add_custom_command(
     OUTPUT
         ${CMAKE_CURRENT_SOURCE_DIR}/dist/index.html
         ${CMAKE_CURRENT_SOURCE_DIR}/dist/Config.js
-        ${CMAKE_CURRENT_SOURCE_DIR}/dist/assets/index.css
-        ${CMAKE_CURRENT_SOURCE_DIR}/dist/assets/index.js
     DEPENDS ${SOURCES} ${PUBLIC} ${SRC}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMAND [ ! -d ./node_modules ] && npm install || true
@@ -30,8 +28,6 @@ add_custom_target(${PROJECT_NAME} ALL
     DEPENDS
         dist/index.html
         dist/Config.js
-        dist/assets/index.css
-        dist/assets/index.js
 )
 
 if(SNAPCRAFT_BUILD)
