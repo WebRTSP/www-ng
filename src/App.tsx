@@ -30,10 +30,14 @@ import {
   SaveMultiViewState
 } from "./LocalStorage";
 
+declare global {
+  const STUNServer: string | undefined;
+}
 
 declare const WebRTSPPort: number;
 const protocol = window.location.protocol === 'http:' ? "ws" : "wss";
 const url = `${protocol}://${window.location.hostname}:${WebRTSPPort}/`;
+const iceServers = typeof STUNServer !== 'undefined' ? [{ urls: [STUNServer] }] : undefined;
 
 const MAX_GRID_WIDTH = 2;
 const MAX_GRID_HEIGHT = 2;
@@ -243,6 +247,7 @@ function App() {
             activeStreamer = { activeStreamer }
             activeStreamerRev = { activeStreamersRevs[0] }
             incActiveStreamerRev = { () => incActiveStreamerRev(0) }
+            iceServers = { iceServers }
           />
         </main>
       </SidebarProvider>
@@ -296,6 +301,7 @@ function App() {
                       activeStreamer = { activeStreamer }
                       activeStreamerRev = { activeStreamersRevs[streamerIndex] }
                       incActiveStreamerRev = { () => incActiveStreamerRev(streamerIndex) }
+                      iceServers = { iceServers }
                     />
                   </div>;
               });
