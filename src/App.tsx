@@ -239,10 +239,11 @@ function App() {
           }
           <WebRTSPPlayer
             className = "flex-1"
-            webRTSP ={ webRTSP }
+            webRTSP = { webRTSP }
             activeStreamer = { activeStreamer }
             activeStreamerRev = { activeStreamersRevs[0] }
-            incActiveStreamerRev = { () => incActiveStreamerRev(0) } />
+            incActiveStreamerRev = { () => incActiveStreamerRev(0) }
+          />
         </main>
       </SidebarProvider>
     );
