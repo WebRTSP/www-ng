@@ -7,7 +7,7 @@ export function LoadActiveStreamers(): (string | undefined)[] {
     return [];
 
   const value = JSON.parse(lsValue);
-  if(!Array.isArray(value) || !value.every(item => typeof item === 'string'))
+  if(!Array.isArray(value) || !value.every(item => item === null || typeof item === 'string'))
     return [];
 
   return value;
