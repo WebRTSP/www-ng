@@ -59,7 +59,7 @@ export function StreamerSelector(
       return (options && !options.has(Method.LIST) && options.has(Method.DESCRIBE));
     })
     .map((item): StreamerInfo => {
-      return { uri: item[0], description: item[1] };
+      return { label: item[0], uri: item[0], description: item[1] };
     });
 
   let activeStreamer = context.activeStreamer(props.streamerIndex);

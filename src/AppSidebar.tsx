@@ -32,7 +32,7 @@ import type { StreamerInfo } from "./StreamerInfo";
 export function StreamerSubItem(props: { subItem: StreamerInfo }) {
   const context = useContext(AppContext);
   const subItem =  props.subItem;
-  let name = subItem.uri;
+  let name = subItem.label;
 
   const timeFormat =
     Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "medium" });
@@ -56,10 +56,10 @@ export function StreamerSubItem(props: { subItem: StreamerInfo }) {
 
 export function StreamerItem(props: { item: StreamerInfo }) {
   const context = useContext(AppContext);
-  const item = props.item;
+  const streamerInfo = props.item;
   const [isOpen, setIsOpen] = useState(false);
 
-  const uriInfo = context.webRTSP.urisInfos.get(item.uri);
+  const uriInfo = context.webRTSP.urisInfos.get(streamerInfo.uri);
   const isLoading = uriInfo?.fetching ?? true;
   const hasSubStreams = uriInfo?.options?.has(Method.LIST) ?? false;
 
@@ -69,7 +69,7 @@ export function StreamerItem(props: { item: StreamerInfo }) {
     if(!open || isLoading)
       return;
 
-    context.webRTSP.fetchList(item.uri).catch();
+    context.webRTSP.fetchList(streamerInfo.uri).catch();
   };
 
   if(hasSubStreams) {
@@ -79,10 +79,10 @@ export function StreamerItem(props: { item: StreamerInfo }) {
           <SidebarMenuItem>
             <CollapsibleTrigger asChild>
               <SidebarMenuButton
-                isActive = { context.activeStreamer(0) == item.uri }
+                isActive = { context.activeStreamer(0) == streamerInfo.uri }
               >
                 <VideoIcon />
-                <span>{ item.uri }</span>
+                <span>{ streamerInfo.label }</span>
                 <LoaderCircleIcon className = "ml-auto animate-spin"/>
               </SidebarMenuButton>
             </CollapsibleTrigger>
@@ -92,17 +92,17 @@ export function StreamerItem(props: { item: StreamerInfo }) {
     } else {
       const list = [...(uriInfo?.list || [])]
         .map((item): StreamerInfo => {
-          return { uri: item[0], description: item[1] };
+          return { label: item[0], uri: streamerInfo.uri + "/" + item[0], description: item[1] };
         });
       return (
         <Collapsible onOpenChange = { onOpenChange }>
           <SidebarMenuItem>
             <CollapsibleTrigger asChild>
               <SidebarMenuButton
-                isActive = { context.activeStreamer(0) == item.uri }
+                isActive = { context.activeStreamer(0) == streamerInfo.uri }
               >
                 <VideoIcon />
-                <span>{ item.uri }</span>
+                <span>{ streamerInfo.label }</span>
                 {
                   isOpen ?
                   <ChevronDownIcon className = "ml-auto" /> :
@@ -129,9 +129,9 @@ export function StreamerItem(props: { item: StreamerInfo }) {
       return (
         <SidebarMenuItem>
           <SidebarMenuButton
-            isActive = { context.activeStreamer(0) == item.uri }
+            isActive = { context.activeStreamer(0) == streamerInfo.uri }
           >
-            <VideoIcon /> <span>{ item.uri }</span>
+            <VideoIcon /> <span>{ streamerInfo.label }</span>
           </SidebarMenuButton>
           <SidebarMenuAction>
             <LoaderCircleIcon className = "animate-spin"/>
@@ -142,11 +142,11 @@ export function StreamerItem(props: { item: StreamerInfo }) {
       return (
         <SidebarMenuItem>
           <SidebarMenuButton
-            isActive = { context.activeStreamer(0) == item.uri }
-            onClick = { () => { context.setActiveStreamer(0, item.uri); } }
+            isActive = { context.activeStreamer(0) == streamerInfo.uri }
+            onClick = { () => { context.setActiveStreamer(0, streamerInfo.uri); } }
           >
             <VideoIcon />
-            <span>{ item.uri }</span>
+            <span>{ streamerInfo.label }</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
       );
@@ -163,7 +163,7 @@ export function AppSidebar() {
       return (options && (options.has(Method.LIST) || options.has(Method.DESCRIBE)));
     })
     .map((item): StreamerInfo => {
-      return { uri: item[0], description: item[1] };
+      return { label: item[0], uri: item[0], description: item[1] };
     });
 
   return (
