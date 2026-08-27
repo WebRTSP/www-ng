@@ -1,4 +1,4 @@
-import { useContext, useState  } from "react";
+import { useContext, useEffect, useState  } from "react";
 import {
   VideoIcon,
   FilmIcon,
@@ -28,6 +28,7 @@ import {
 import { AppContext } from "./AppContext";
 import { Method } from "webrtsp.ts/Types";
 import type { StreamerInfo } from "./StreamerInfo";
+import { URIInfoStatus } from "webrtsp.react/useWebRTSP";
 
 export function StreamerSubItem(props: { subItem: StreamerInfo }) {
   const context = useContext(AppContext);
@@ -59,9 +60,17 @@ export function StreamerItem(props: { item: StreamerInfo }) {
   const streamerInfo = props.item;
   const [isOpen, setIsOpen] = useState(false);
 
-  const uriInfo = context.webRTSP.urisInfos.get(streamerInfo.uri);
-  const isLoading = uriInfo?.fetching ?? true;
+  const uri = streamerInfo.uri;
+  const uriInfo = context.webRTSP.uriInfo(streamerInfo.uri);
+  const isLoading = uriInfo?.status == URIInfoStatus.FETCHING;
+  const hasError = uriInfo?.status == URIInfoStatus.ERROR;
   const hasSubStreams = uriInfo?.options?.has(Method.LIST) ?? false;
+
+  const fetchUriInfo = context.webRTSP.fetchUriInfo;
+  useEffect(() => {
+    if(!uriInfo)
+      fetchUriInfo(uri, true);
+  }, [uri, uriInfo, fetchUriInfo]);
 
   const onOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -69,7 +78,7 @@ export function StreamerItem(props: { item: StreamerInfo }) {
     if(!open || isLoading)
       return;
 
-    context.webRTSP.fetchList(streamerInfo.uri).catch();
+    fetchUriInfo(streamerInfo.uri, true);
   };
 
   if(hasSubStreams) {
@@ -143,7 +152,12 @@ export function StreamerItem(props: { item: StreamerInfo }) {
         <SidebarMenuItem>
           <SidebarMenuButton
             isActive = { context.activeStreamer(0) == streamerInfo.uri }
-            onClick = { () => { context.setActiveStreamer(0, streamerInfo.uri); } }
+            onClick = {() => {
+              if(hasError)
+                context.webRTSP.fetchUriInfo(streamerInfo.uri, true);
+
+              context.setActiveStreamer(0, streamerInfo.uri);
+            }}
           >
             <VideoIcon />
             <span>{ streamerInfo.label }</span>
@@ -156,12 +170,7 @@ export function StreamerItem(props: { item: StreamerInfo }) {
 
 export function AppSidebar() {
   const context = useContext(AppContext);
-  const rootList = [...context.webRTSP.rootList]
-    .filter((item) => {
-      const uriInfo = context.webRTSP.urisInfos.get(item[0]);
-      const options = uriInfo?.options;
-      return (options && (options.has(Method.LIST) || options.has(Method.DESCRIBE)));
-    })
+  const rootList = [...(context.rootInfo?.list || [])]
     .map((item): StreamerInfo => {
       return { label: item[0], uri: item[0], description: item[1] };
     });
@@ -172,11 +181,15 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {rootList.map((item) => (
-                <StreamerItem
-                  key = { item.uri }
-                  item = { item } />
-              ))}
+              {
+                rootList.map((item) => {
+                  return (
+                    <StreamerItem
+                      key = { item.uri }
+                      item = { item } />
+                  );
+                })
+              }
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

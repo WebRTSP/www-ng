@@ -1,8 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from "react";
-import { useWebRTSP } from "./WebRTSP.react/useWebRTSP";
+import { URIInfoStatus, useWebRTSP } from "webrtsp.react/useWebRTSP";
 import { AppContext } from "./AppContext";
-import WebRTSPPlayer from "./WebRTSP.react/WebRTSPPlayer";
-import { useLazyRef } from "./WebRTSP.react/useLazyRef";
+import WebRTSPPlayer from "webrtsp.react/WebRTSPPlayer";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
@@ -21,7 +20,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Method } from "webrtsp.ts/Types";
+import { Method, WILDCARD_URI } from "webrtsp.ts/Types";
 import { type StreamerInfo } from "./StreamerInfo";
 import {
   LoadActiveStreamers,
@@ -29,6 +28,7 @@ import {
   SaveActiveStreamers,
   SaveMultiViewState
 } from "./LocalStorage";
+
 
 declare global {
   const STUNServer: string | undefined;
@@ -52,20 +52,18 @@ export function StreamerSelector(
 ) {
   const [open, setOpen] = useState(false);
   const context = useContext(AppContext);
-  const rootList = [...context.webRTSP.rootList]
+  const rootInfo = context.rootInfo;
+  const rootList = [...(rootInfo?.list || [])]
     .filter((item) => {
-      const uriInfo = context.webRTSP.urisInfos.get(item[0]);
+      const uriInfo = context.webRTSP.uriInfo(item[0]);
       const options = uriInfo?.options;
-      return (options && !options.has(Method.LIST) && options.has(Method.DESCRIBE));
+      return (options && options.has(Method.DESCRIBE));
     })
     .map((item): StreamerInfo => {
       return { label: item[0], uri: item[0], description: item[1] };
     });
 
   let activeStreamer = context.activeStreamer(props.streamerIndex);
-  if(activeStreamer && !context.webRTSP.urisInfos.has(activeStreamer)) {
-    activeStreamer = undefined;
-  }
 
   return (
     <Popover open = { open } onOpenChange = { setOpen }>
@@ -84,7 +82,14 @@ export function StreamerSelector(
         <Command>
           <CommandList>
             <CommandEmpty>
-              <LoaderCircle className = "m-auto stroke-primary-200 animate-spin"/>
+              <LoaderCircle
+                className = "
+                  m-auto
+                  stroke-primary
+                  opacity-80
+                  animate-spin
+                "
+              />
             </CommandEmpty>
             <CommandGroup>
               {
@@ -116,6 +121,8 @@ interface GridSize {
 
 function App() {
   const webRTSP = useWebRTSP(url);
+  const { connected, uriInfo, ensureFetched } = webRTSP;
+
   const [gridSize, setGridSize] = useState<GridSize>(
     () => {
       return LoadMultiViewState() ?
@@ -124,12 +131,20 @@ function App() {
     }
   );
 
+  const rootInfo = uriInfo(WILDCARD_URI);
+  useEffect(() => {
+    if(!connected)
+      return;
+
+    ensureFetched(WILDCARD_URI, true);
+  }, [connected, ensureFetched]);
+
   function saveGridSize(size: GridSize) {
     setGridSize(size);
     SaveMultiViewState(size.width != 1 && size.height != 1);
   }
 
-  const activeStreamersRef = useLazyRef<(string | undefined) []>(
+  const [activeStreamers, setActiveStreamers] = useState<(string | undefined)[]>(
     () => {
       const activeStreamers = LoadActiveStreamers();
 
@@ -143,51 +158,54 @@ function App() {
   const [activeStreamersRevs, setActiveStreamersRevs] =
     useState<number[]>(() => Array(MAX_PREVIEW_COUNT).fill(0));
 
-  const incActiveStreamerRev = (index: number) => {
+  const incActiveStreamerRev = useCallback((index: number) => {
     setActiveStreamersRevs((revs) => {
-      return revs.map((
-        rev, i) => {
+      return revs.map((rev, i) => {
           return i == index ? rev >= Number.MAX_SAFE_INTEGER ? 0 : rev + 1 : rev;
-        });
+      });
     });
-  };
+  }, [setActiveStreamersRevs]);
 
   const setActiveStreamer = useCallback((index: number, streamer: string) => {
-    activeStreamersRef.current[index] = streamer;
-    SaveActiveStreamers(activeStreamersRef.current);
+    setActiveStreamers((activeStreamers) => {
+      activeStreamers[index] = streamer;
+      SaveActiveStreamers(activeStreamers);
+      return activeStreamers;
+    });
     incActiveStreamerRev(index);
-  }, [activeStreamersRef]);
+  }, [setActiveStreamers, incActiveStreamerRev]);
 
-  const singleStreamerMode = webRTSP.rootList.size == 1;
+  const isLoading = rootInfo?.status == URIInfoStatus.FETCHING;
+  const rootOptions = !isLoading ? rootInfo?.options : undefined;
+  const rootList = !isLoading ? rootInfo?.list : undefined;
+  const singleStreamerMode = !isLoading ?
+    ((rootOptions && !rootOptions.has(Method.LIST)) || (rootList && rootList.size == 1)) :
+    undefined;
+  const hasStreamers = !isLoading &&
+    ((singleStreamerMode ?? false) || ((rootList && rootList.size > 0) ?? false));
 
-  useEffect(() => {
-    if(!webRTSP.connected)
-      return;
-
-    if(!singleStreamerMode)
-      return;
-
-    const firstStreamer = webRTSP.rootList.keys().next().value;
-
-    console.log("first streamer: ", firstStreamer);
-    if(firstStreamer)
+  if(!isLoading && singleStreamerMode) {
+    const firstStreamer = rootInfo?.list?.keys().next().value ?? WILDCARD_URI;
+    if(firstStreamer && activeStreamers[0] != firstStreamer) {
       setActiveStreamer(0, firstStreamer);
-  }, [setActiveStreamer, singleStreamerMode, webRTSP.connected, webRTSP.rootList]);
+    }
+  }
 
   const loadingStub = () => {
     return (
       <main className = "min-h-svh w-full flex flex-col">
         <div className = "relative flex-1">
           <LoaderCircleIcon
-            className = {`
+            className = "
               absolute
               max-w-1/2 max-h-1/2
               w-40 h-40
               top-0 bottom-0 left-0 right-0
               m-auto
-              stroke-primary-200
+              stroke-primary
+              opacity-50
               animate-spin
-            `}
+            "
           />
         </div>
       </main>
@@ -199,14 +217,15 @@ function App() {
       <main className = "min-h-svh w-full flex flex-col">
         <div className = "relative flex-1">
           <VideoOffIcon
-            className = {`
+            className = "
               absolute
               max-w-1/2 max-h-1/2
               w-40 h-40
               top-0 bottom-0 left-0 right-0
               m-auto
-              stroke-primary-200
-            `}
+              stroke-primary
+              opacity-50
+            "
           />
         </div>
       </main>
@@ -214,14 +233,15 @@ function App() {
   };
 
   const singlePreview = () => {
-    const activeStreamer = activeStreamersRef.current[0];
+    const activeStreamer = activeStreamers[0];
+    const activeStreamerRevision = activeStreamersRevs[0];
 
     return (
       <SidebarProvider>
-        { !singleStreamerMode && <AppSidebar /> }
+        { !isLoading && !singleStreamerMode && <AppSidebar /> }
         <main className = "flex-1 flex flex-col">
           {
-            !singleStreamerMode &&
+            !isLoading && !singleStreamerMode &&
             <div className = "flex mx-2 mt-1">
               <SidebarTrigger />
               <div className = "flex-1"></div>
@@ -244,8 +264,8 @@ function App() {
           <WebRTSPPlayer
             className = "flex-1"
             webRTSP = { webRTSP }
-            activeStreamer = { activeStreamer }
-            activeStreamerRev = { activeStreamersRevs[0] }
+            uri = { activeStreamer }
+            revision = { activeStreamerRevision }
             incActiveStreamerRev = { () => incActiveStreamerRev(0) }
             iceServers = { iceServers }
           />
@@ -258,7 +278,7 @@ function App() {
     return (
       <main className = "min-h-svh w-full flex flex-col">
         <div className = "flex mx-2 mt-1">
-          <div className = "flex-1"></div>
+          <div className = "flex-1" />
           <Button
             variant = "outline"
             size = "icon"
@@ -282,7 +302,7 @@ function App() {
             Array(gridSize.height).fill(0).map((_, y) => {
               return Array(gridSize.width).fill(0).map((_, x) => {
                 const streamerIndex = y * gridSize.width + x;
-                const activeStreamer = activeStreamersRef.current[streamerIndex];
+                const activeStreamer = activeStreamers[streamerIndex];
 
                 return <div
                     key = { streamerIndex }
@@ -298,8 +318,8 @@ function App() {
                     <WebRTSPPlayer
                       className = "flex-1"
                       webRTSP = { webRTSP }
-                      activeStreamer = { activeStreamer }
-                      activeStreamerRev = { activeStreamersRevs[streamerIndex] }
+                      uri = { activeStreamer }
+                      revision = { activeStreamersRevs[streamerIndex] }
                       incActiveStreamerRev = { () => incActiveStreamerRev(streamerIndex) }
                       iceServers = { iceServers }
                     />
@@ -313,13 +333,12 @@ function App() {
   };
 
   let main;
-  if(!webRTSP.connected || webRTSP.fetching) {
+  if(!connected || isLoading) {
     main = loadingStub();
-  } else if(webRTSP.rootList.size == 0) {
+  } else if(!hasStreamers) {
     main = noStreamersStub();
   } else if(
-    webRTSP.rootList.size == 1 ||
-    (gridSize.width == 1 && gridSize.height == 1)
+    singleStreamerMode || (gridSize.width == 1 && gridSize.height == 1)
   ) {
     main = singlePreview();
   } else {
@@ -330,9 +349,10 @@ function App() {
     <AppContext value = {
       {
         webRTSP,
+        rootInfo,
 
         activeStreamer(index: number): string | undefined {
-          return activeStreamersRef.current[index];
+          return activeStreamers[index];
         },
         setActiveStreamer,
         activeStreamerRev(index: number): number {

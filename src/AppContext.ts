@@ -1,8 +1,10 @@
 import { createContext } from "react";
-import { WebRTSP } from "./WebRTSP.react/useWebRTSP";
+import { WebRTSP, type URIInfo } from "webrtsp.react/useWebRTSP";
 
 export interface AppContextData {
   webRTSP: WebRTSP;
+  rootInfo: URIInfo | undefined;
+
   activeStreamer(index: number): string | undefined;
   setActiveStreamer(index: number, streamer: string): void;
 
@@ -12,6 +14,7 @@ export interface AppContextData {
 
 export const AppContext = createContext<AppContextData>({
   webRTSP: new WebRTSP,
+  rootInfo: undefined,
 
   activeStreamer(): string | undefined { return undefined; },
   setActiveStreamer() {},
